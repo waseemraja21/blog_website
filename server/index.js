@@ -17,7 +17,7 @@ app.use(
   cors({
     credentials: true,
     methods: ["POST", "GET", "PATCH", "DELETE"],
-    origin: "https://blog-website-frontend-theta.vercel.app/",
+    origin: "https://blog-website-frontend-theta.vercel.app",
   })
 );
 
@@ -25,7 +25,10 @@ app.use(upload());
 app.use("/uploads", express.static(__dirname + "/uploads"));
 
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000"); //client origin
+  res.header(
+    "Access-Control-Allow-Origin",
+    "https://blog-website-frontend-theta.vercel.app"
+  ); //client origin
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept"
