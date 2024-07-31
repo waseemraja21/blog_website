@@ -1,134 +1,166 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { FiEdit } from "react-icons/fi";
 import { BiCheck } from "react-icons/bi";
-import { UserContext } from '../Context/userContext';
-import axios from 'axios';
+import { UserContext } from "../Context/userContext";
+import axios from "axios";
 
 export default function UserProfile() {
-
-  const [avatar, setAvatar] = useState('');
-  const [name, setName] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [avatar, setAvatar] = useState("");
+  const [name, setName] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [isAvatarTouched, setIsAvatarTouched] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-
-  
-
-  const {currentUser} = useContext(UserContext);
+  const { currentUser } = useContext(UserContext);
   // console.log(currentUser);
-  
+
   const token = currentUser?.token;
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    if(!token){
-      navigate('/login');
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
     }
-  }, [])
+  }, []);
 
-  useEffect(()=>{
-    const getUser = async ()=>{
-    const response = await axios.get(`${process.env.REACT_APP_BASE_URL}/users/${currentUser?.userId}`,{withCredentials: true, headers: {Authorization: `Bearer ${token}`}});
-    
-    const {name, avatar} = response.data;
-    setName(name);
-    setAvatar(avatar);
+  useEffect(() => {
+    const getUser = async () => {
+      const response = await axios.get(
+        `${process.env.REACT_APP_BASE_URL}/users/${currentUser?.userId}`,
+        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    }
+      const { name, avatar } = response.data;
+      setName(name);
+      setAvatar(avatar);
+    };
 
     getUser();
-  }, [])
+  }, []);
 
+  const updateUserDetails = async (ev) => {
+    ev.preventDefault();
 
+    try {
+      const userData = new FormData();
+      userData.set("name", name);
+      console.log(currentUser?.name);
 
- const updateUserDetails = async (ev) =>{
-  ev.preventDefault();
+      userData.set("currentPassword", currentPassword);
+      userData.set("newPassword", newPassword);
+      userData.set("confirmNewPassword", confirmNewPassword);
 
-  try{
-    const userData = new FormData();
-    userData.set('name', name);
-    console.log(currentUser?.name)
-    
-    userData.set('currentPassword', currentPassword);
-    userData.set('newPassword', newPassword);
-    userData.set('confirmNewPassword', confirmNewPassword);
-
-    const response = await axios.patch(`${process.env.REACT_APP_BASE_URL}/users/edit-user`,userData,{withCredentials: true, headers: {Authorization: `Bearer ${token}`}});
-    if(response.status === 200){
-      navigate('/login');
+      const response = await axios.patch(
+        `${process.env.REACT_APP_BASE_URL}/users/edit-user`,
+        userData,
+        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.status === 200) {
+        navigate("/login");
+      }
+    } catch (err) {
+      setError(err.response.data.message);
     }
+  };
 
-  }catch(err){
-    setError(err.response.data.message);
-  }
- }
+  const updateAvatar = async (ev) => {
+    ev.preventDefault();
 
- 
- const updateAvatar = async (ev)=>{
-  ev.preventDefault();
+    setIsAvatarTouched(false);
 
-  setIsAvatarTouched(false);
-  
-  try{
-    const postData = new FormData();
-    postData.set('avatar', avatar);
-    const response = await axios.post(`${process.env.REACT_APP_BASE_URL}/users/change-avatar`,postData,{withCredentials: true, headers: {Authorization: `Bearer ${token}`}});
-    console.log("response", response.data);
-    
-    setAvatar(response?.data.avatar);
-  }catch(err){
-    console.log(err);
-    
-  }
- }
+    try {
+      const postData = new FormData();
+      postData.set("avatar", avatar);
+      const response = await axios.post(
+        `${process.env.REACT_APP_BASE_URL}/users/change-avatar`,
+        postData,
+        { withCredentials: true, headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log("response", response.data);
 
- const handleAvatarChange = (e) => {
-  if (e.target.files.length > 0) {
-    setAvatar(e.target.files[0]);
-  }
-};
+      setAvatar(response?.data.avatar);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-const image = `${process.env.REACT_APP_ASSETS_URL}/uploads/${avatar}`;
-console.log("image", image);
-console.log("avatar",avatar);
+  const handleAvatarChange = (e) => {
+    if (e.target.files.length > 0) {
+      setAvatar(e.target.files[0]);
+    }
+  };
 
-
+  const image = `${process.env.REACT_APP_ASSETS_URL}/uploads/${avatar}`;
+  console.log("image", image);
+  console.log("avatar", avatar);
 
   return (
-    <section className='profile'>
-      <div className='container profile_container'>
-        <Link to={'/myposts/'+currentUser.userId} className='btn'>
+    <section className="profile">
+      <div className="container profile_container">
+        <Link to={"/myposts/" + currentUser.userId} className="btn">
           My Posts
         </Link>
 
-        <div className='profile_details'>
-          <div className='avatar_wrapper'>
-              <div className='profile_avatar'>
-              <img src={`${process.env.REACT_APP_ASSETS_URL}/uploads/${avatar}`} alt={''}/>              </div>
-              {/* form to update avatar */}
-              <form className='avatar_form' onSubmit={updateAvatar} encType='multipart/form-data'>
-                <input type='file' name='avatar' id='avatar' onChange={handleAvatarChange} accept='.png , .jpg , .jpeg'/>
-                {/* <label htmlFor='avatar' onClick={()=> setIsAvatarTouched(true)}><FiEdit/></label> */}
-                {/* {isAvatarTouched &&  <button type='submit' className='profile_avatar-btn'><BiCheck/></button>} */}
-                <button type='submit' className='btn primary'>Update Photo</button>
-              </form>
+        <div className="profile_details">
+          <div className="avatar_wrapper">
+            <div className="profile_avatar">
+              <img
+                src={`${process.env.REACT_APP_ASSETS_URL}/uploads/${avatar}`}
+                alt={""}
+              />{" "}
+            </div>
+            {/* form to update avatar */}
+            <form
+              className="avatar_form"
+              onSubmit={updateAvatar}
+              encType="multipart/form-data"
+            >
+              <input
+                type="file"
+                name="avatar"
+                id="avatar"
+                onChange={handleAvatarChange}
+                accept=".png , .jpg , .jpeg"
+              />
+              {/* <label htmlFor='avatar' onClick={()=> setIsAvatarTouched(true)}><FiEdit/></label> */}
+              {/* {isAvatarTouched &&  <button type='submit' className='profile_avatar-btn'><BiCheck/></button>} */}
+              <button type="submit" className="btn primary">
+                Update Photo
+              </button>
+            </form>
           </div>
           <>{currentUser.name}</>
           {/* form to update user details */}
 
-          <form className='form profile_form' onSubmit={updateUserDetails}>
-            {error && <p className='form_error-message'>{error}</p>}
-            <input type="password" placeholder='Current Password' value={currentPassword} onChange={e=>setCurrentPassword(e.target.value)}/>
-            <input type="password" placeholder='New Password' value={newPassword} onChange={e=>setNewPassword(e.target.value)}/>
-            <input type="password" placeholder='Confirm New Password' value={confirmNewPassword} onChange={e=>setConfirmNewPassword(e.target.value)}/>
-            <button type='submit' className='btn primary'>Update Details</button>
+          <form className="form profile_form" onSubmit={updateUserDetails}>
+            {error && <p className="form_error-message">{error}</p>}
+            <input
+              type="password"
+              placeholder="Current Password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="New Password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Confirm New Password"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+            />
+            <button type="submit" className="btn primary">
+              Update Details
+            </button>
           </form>
         </div>
       </div>
     </section>
-  )
+  );
 }
