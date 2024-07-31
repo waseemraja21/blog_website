@@ -16,7 +16,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     credentials: true,
-    origin: "http://localhost:3000",
+    methods: ["POST", "GET", "PATCH", "DELETE"],
+    origin: "https://blog-website-frontend-theta.vercel.app/",
   })
 );
 
