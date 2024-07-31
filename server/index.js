@@ -25,18 +25,6 @@ app.use(
   })
 );
 
-app.use(function (req, res, next) {
-  res.header(
-    "Access-Control-Allow-Origin",
-    "https://blog-website-frontend-theta.vercel.app" // frontend origin
-  );
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
-
 // MongoDB connection
 const uri = process.env.MONGO_URI;
 
